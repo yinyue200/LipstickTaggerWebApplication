@@ -62,6 +62,7 @@ namespace LipstickTaggerWebApplication
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
         }
     }

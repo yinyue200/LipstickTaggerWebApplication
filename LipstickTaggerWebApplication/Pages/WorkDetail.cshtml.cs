@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LipstickTaggerWebApplication.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -22,28 +24,79 @@ namespace LipstickTaggerWebApplication.Pages
         public string Tag { get; set; }
         public bool Enable { get; set; }
     }
+    [Authorize]
     public class WorkDetailModel : PageModel
     {
-        public WorkDetailModel(ApplicationDbContext dbContext)
+        public WorkDetailModel(ApplicationDbContext dbContext, UserManager<IdentityUser> userManager)
         {
             _applicationDbContext = dbContext;
+            _userManager = userManager;
         }
+        private UserManager<IdentityUser> _userManager;
         private ApplicationDbContext _applicationDbContext;
         public bool AutoSave { get; set; }
         public string Path { get; set; }
         public string ImgPath { get; set; }
-        public void OnGet(string path)
+        public async Task<IActionResult> OnGetAsync(string path)
         {
-            var user = _applicationDbContext.Users.Where(a => a.Id == User.Identity.Name).FirstOrDefault();
-            var userSetting = _applicationDbContext.UserSettingEntities.Where(a => a.UserId == User.Identity.Name).FirstOrDefault();
+
+            var user = await _userManager.GetUserAsync(User);
+            var userSetting = _applicationDbContext.UserSettingEntities.Where(a => a.UserId == user.Id).FirstOrDefault();
             if(userSetting!=null)
                 AutoSave = userSetting.EnableAutoSave;
-            Tags = GetTagList().Select(a => new TagState(a, true)).ToList();
+            Tags = GetTagList().Select(a => new TagState(a, false)).ToList();
+            ImgPath = "/api/ApiData/GetImg?path=" + System.Web.HttpUtility.UrlEncode(path);
+            var jsonpath = GetWorkJsonPath(path);
+            TagResult tagresult;
+            if (System.IO.File.Exists(jsonpath))
+            {
+                tagresult = Newtonsoft.Json.JsonConvert.DeserializeObject<TagResult>(System.IO.File.ReadAllText(jsonpath));
+                if(tagresult != null)
+                {
+                    foreach (var item in Tags)
+                    {
+                        item.Enable = tagresult.PhotosTags.Contains(item.Tag);
+                    }
+                }
+            }
             //SelectedTags =  new string[] { "ÎÞ¹ØÍ¼Æ¬" };
+            return Page();
         }
-        public void OnPost(string path)
+        public async Task<IActionResult> OnPostAsync(string action)
         {
-            ;
+            return Page();
+        }
+        public static string GetWorkJsonPath(string path)
+        {
+            return "mdata\\photos\\" + path + ".json";
+        }
+        public async Task<IActionResult> OnPostSaveAsync(string path)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var userSetting = _applicationDbContext.UserSettingEntities.Where(a => a.UserId == user.Id).FirstOrDefault();
+            if (userSetting != null)
+                userSetting.EnableAutoSave = AutoSave;
+            else
+                await _applicationDbContext.UserSettingEntities
+                    .AddAsync(new UserSettingEntity() { UserId = user.Id, EnableAutoSave = AutoSave });
+            await _applicationDbContext.SaveChangesAsync();
+            var tagresult = new Data.TagResult();
+            tagresult.Path = path;
+            tagresult.LastEditBy = User.Identity.Name;
+            tagresult.PhotosTags = Tags.Where(a => a.Enable).Select(a => a.Tag).ToList();
+            await System.IO.File.WriteAllTextAsync(GetWorkJsonPath(path),
+                Newtonsoft.Json.JsonConvert.SerializeObject(tagresult));
+            return Page();
+        }
+        public async Task<IActionResult> OnPostNextAsync(string path)
+        {
+
+            return Page();
+        }
+        public async Task<IActionResult> OnPostPrevAsync(string path)
+        {
+
+            return Page();
         }
         [BindProperty]
         public List<TagState> Tags { get; set; }
