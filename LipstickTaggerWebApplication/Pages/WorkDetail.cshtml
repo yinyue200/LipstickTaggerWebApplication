@@ -28,7 +28,7 @@
     </tr>
         }
     </table>
-    @Html.CheckBoxFor(m => m.AutoSave);
+    @Html.CheckBoxFor(m => m.AutoSave, new { Content = "AUTO SAVE" });
     <button>Save</button>
 </form>
 <a asp-action="next">Next</a>
