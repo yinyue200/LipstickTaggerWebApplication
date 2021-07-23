@@ -1,0 +1,35 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model LipstickTaggerWebApplication.Pages.WorkDetailModel
+@{
+    ViewData["Title"] = "内容详情";
+}
+<img src="@Model.ImgPath" />
+@*<select style="height:200pt;width:fit-content"
+        asp-for="SelectedTags" asp-items="WorkDetailModel.GetTagList().Select(a=>new SelectListItem() { Text=a,Value=a})"></select>*@
+<form method="post">
+    <table class="table">
+        <tr>
+            <th>Id</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Dispatched</th>
+        </tr>
+        @for (int i = 0; i < Model.Tags.Count; i++)
+        {
+    <tr>
+        <td>
+            @*<input type="hidden" name="Tags.Index" value="@i" />*@
+            <input type="hidden" asp-for="Tags[i].Tag" value="@Model.Tags[i].Tag" />
+            @Model.Tags[i].Tag
+        </td>
+        <td><input asp-for="Tags[i].Enable" type="checkbox" value="true" /></td>
+        @*checked="" @(Model.Tags[i].Enable ? "checked='checked'" : "")*@
+    </tr>
+        }
+    </table>
+    @Html.CheckBoxFor(m => m.AutoSave);
+    <button>Save</button>
+</form>
+<a asp-action="next">Next</a>
+<a asp-action="prev">Prev</a>

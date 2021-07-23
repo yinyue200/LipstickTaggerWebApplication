@@ -1,0 +1,16 @@
+﻿@page
+@using Microsoft.AspNetCore.Identity
+@using X.PagedList.Mvc.Core;
+@model LipstickTaggerWebApplication.Pages.ViewWorksModel
+@{
+    ViewData["Title"] = "查看工作列表";
+}
+
+List of Works
+<ul>
+    @foreach (var one in Model.PagedWorkList)
+    {
+        <li>@one | @Model.HasResult(one) <a asp-page="./WorkDetail" asp-route-path="@one">View</a></li>
+    }
+</ul>
+@Html.PagedListPager(Model.PagedWorkList, page => Url.Action("ViewWorks", new { page }))
