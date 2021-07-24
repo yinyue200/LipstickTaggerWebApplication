@@ -21,7 +21,7 @@ namespace LipstickTaggerWebApplication.Pages
             this.signInManager = signInManager;
         }
         List<string> WorkList;
-        public async Task<List<string>> getworklist(string username)
+        public static async Task<List<string>> getworklist(string username)
         {
             return (await System.IO.File.ReadAllLinesAsync("mdata\\users\\" + username.Replace("@", "&")+"\\worklist.txt")).ToList();
         }
@@ -39,7 +39,7 @@ namespace LipstickTaggerWebApplication.Pages
         }
         public bool HasResult(string path)
         {
-            return false;
+            return System.IO.File.Exists(WorkDetailModel.GetWorkJsonPath(path));
         }
     }
 }

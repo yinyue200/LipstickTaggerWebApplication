@@ -34,6 +34,7 @@ namespace LipstickTaggerWebApplication.Pages
         }
         private UserManager<IdentityUser> _userManager;
         private ApplicationDbContext _applicationDbContext;
+        [BindProperty]
         public bool AutoSave { get; set; }
         public string Path { get; set; }
         public string ImgPath { get; set; }
@@ -72,6 +73,12 @@ namespace LipstickTaggerWebApplication.Pages
         }
         public async Task<IActionResult> OnPostSaveAsync(string path)
         {
+            await SaveDataAsync(path);
+            return Page();
+        }
+
+        private async Task SaveDataAsync(string path)
+        {
             var user = await _userManager.GetUserAsync(User);
             var userSetting = _applicationDbContext.UserSettingEntities.Where(a => a.UserId == user.Id).FirstOrDefault();
             if (userSetting != null)
@@ -86,17 +93,27 @@ namespace LipstickTaggerWebApplication.Pages
             tagresult.PhotosTags = Tags.Where(a => a.Enable).Select(a => a.Tag).ToList();
             await System.IO.File.WriteAllTextAsync(GetWorkJsonPath(path),
                 Newtonsoft.Json.JsonConvert.SerializeObject(tagresult));
-            return Page();
         }
+
         public async Task<IActionResult> OnPostNextAsync(string path)
         {
-
-            return Page();
+            if(AutoSave)
+            {
+                await SaveDataAsync(path);
+            }
+            var worklist = await ViewWorksModel.getworklist(User.Identity.Name);
+            var newpath = worklist[worklist.IndexOf(path) + 1];
+            return RedirectToPage(new { path = newpath });
         }
         public async Task<IActionResult> OnPostPrevAsync(string path)
         {
-
-            return Page();
+            if (AutoSave)
+            {
+                await SaveDataAsync(path);
+            }
+            var worklist = await ViewWorksModel.getworklist(User.Identity.Name);
+            var newpath = worklist[worklist.IndexOf(path) - 1];
+            return RedirectToPage(new { path = newpath });
         }
         [BindProperty]
         public List<TagState> Tags { get; set; }
