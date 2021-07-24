@@ -1,6 +1,7 @@
 using LipstickTaggerWebApplication.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
@@ -17,6 +18,7 @@ namespace LipstickTaggerWebApplication
 {
     public class Startup
     {
+        public static bool EnableRegister { get; set; } = true;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -46,12 +48,19 @@ namespace LipstickTaggerWebApplication
             }
             else
             {
+                //app.UseHttpsRedirection();
+
+                EnableRegister = false;
+                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+                });
                 app.UseExceptionHandler("/Error");
+
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                //app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
