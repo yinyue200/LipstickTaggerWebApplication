@@ -23,7 +23,10 @@ namespace LipstickTaggerWebApplication.Pages
         List<string> WorkList;
         public static async Task<List<string>> getworklist(string username)
         {
-            return (await System.IO.File.ReadAllLinesAsync("mdata\\users\\" + username.Replace("@", "&")+"\\worklist.txt")).ToList();
+            return (await System.IO.File.ReadAllLinesAsync("mdata"+
+                Path.DirectorySeparatorChar+
+                "users" + Path.DirectorySeparatorChar + username.Replace("@", "&")+ Path.DirectorySeparatorChar+"worklist.txt"))
+                .ToList();
         }
         public IPagedList<string> PagedWorkList;
         public async Task<IActionResult> OnGetAsync(int? page)

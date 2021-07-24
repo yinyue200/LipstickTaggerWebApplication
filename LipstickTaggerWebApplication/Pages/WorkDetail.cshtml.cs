@@ -36,13 +36,13 @@ namespace LipstickTaggerWebApplication.Pages
         private ApplicationDbContext _applicationDbContext;
         [BindProperty]
         public bool AutoSave { get; set; }
-        public string Path { get; set; }
+        public string path { get; set; }
         public string ImgPath { get; set; }
         [BindProperty]
         public string TagCropResults { get; set; }
         public async Task<IActionResult> OnGetAsync(string path)
         {
-
+            this.path = path;
             var user = await _userManager.GetUserAsync(User);
             var userSetting = _applicationDbContext.UserSettingEntities.Where(a => a.UserId == user.Id).FirstOrDefault();
             if(userSetting!=null)
@@ -75,10 +75,11 @@ namespace LipstickTaggerWebApplication.Pages
         }
         public static string GetWorkJsonPath(string path)
         {
-            return "mdata\\photos\\" + path + ".json";
+            return "mdata" + System.IO.Path.DirectorySeparatorChar + "photos" + System.IO.Path.DirectorySeparatorChar + path + ".json";
         }
         public async Task<IActionResult> OnPostSaveAsync(string path)
         {
+            this.path = path;
             await SaveDataAsync(path);
             return Page();
         }
@@ -97,6 +98,7 @@ namespace LipstickTaggerWebApplication.Pages
             tagresult.Path = path;
             tagresult.LastEditBy = User.Identity.Name;
             tagresult.PhotosTags = Tags.Where(a => a.Enable).Select(a => a.Tag).ToList();
+            tagresult.TagCropResults = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TagCropResult>>(TagCropResults);
             await System.IO.File.WriteAllTextAsync(GetWorkJsonPath(path),
                 Newtonsoft.Json.JsonConvert.SerializeObject(tagresult));
         }
