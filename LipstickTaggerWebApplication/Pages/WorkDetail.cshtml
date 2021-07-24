@@ -4,9 +4,95 @@
 @{
     ViewData["Title"] = "内容详情";
 }
-<img src="@Model.ImgPath" />
+@section Head
+{
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+}
+<div>
+    <img id="image" style="display:block;width:100%" src="@Model.ImgPath" />
+</div>
+<select ></select>
+<script>
+
+    const image = document.getElementById('image');
+    const cropper = new Cropper(image, {
+        //aspectRatio: 16 / 9,
+        crop(event) {
+            //console.log(event.detail.x);
+            //console.log(event.detail.y);
+            //console.log(event.detail.width);
+            //console.log(event.detail.height);
+            //console.log(event.detail.rotate);
+            //console.log(event.detail.scaleX);
+            //console.log(event.detail.scaleY);
+        },
+    });
+</script><br/>
+<button id="leftrotate">左旋</button><input id="input-num" type="number" value="0"/><button id="rightrotate">右旋</button><br/>
+<button>Remove</button><br/>
+<select>
+     <option value="0">口红膏体及本体</option>
+     <option value="1">口红涂抹样例</option>
+     <option value="2">口红本体</option>
+     <option value="3">口红外包装</option>
+</select>
+<button>Add</button><br/>
+<script>
+    var leftrotate = document.getElementById("leftrotate");
+    var rightrotate = document.getElementById("rightrotate");
+    var input_num = document.getElementById("input-num");  //数字显示
+    function setrotate() {
+        cropper.rotateTo(parseInt(input_num.value));
+    }
+    input_num.onchange = function () {
+        setrotate();
+    }
+    leftrotate.onmousedown = function () {
+        var i = 0; //变量i
+        mouseTime = setInterval(function () {  //setInterval可一直执行内部函数
+            left();
+            i++  //若过一秒，执行一次i++
+        }, 70);
+        if (i == 0) {  //i=0时证明无长按事件为单击事件
+            left();
+        }
+    }
+    function left() { //数字加1函数
+        if (input_num.value < 0) {
+            input_num.value = 359;
+        } else {
+            input_num.value = parseInt(input_num.value) - 1;
+        }
+        setrotate();
+    }
+    leftrotate.onmouseup = function () {//鼠标抬起，执行清除
+        clearInterval(mouseTime);   //清除setInterval的时间
+    }
+    rightrotate.onmousedown = function () {
+        var i = 0;
+        mouseTime = setInterval(function () {
+            right();
+            i++     //i=0时证明无长按事件为单击事件
+        }, 70); //1000即1秒
+        if (i == 0) {
+            right();
+        }
+    }
+    function right() {
+        if (input_num.value >= 360) {
+            input_num.value = 0;
+        } else {
+            input_num.value = parseInt(input_num.value) + 1;
+        }
+        setrotate();
+    }
+    rightrotate.onmouseup = function () {
+        clearInterval(mouseTime);
+    }
+</script>
 @*<select style="height:200pt;width:fit-content"
-        asp-for="SelectedTags" asp-items="WorkDetailModel.GetTagList().Select(a=>new SelectListItem() { Text=a,Value=a})"></select>*@
+    asp-for="SelectedTags" asp-items="WorkDetailModel.GetTagList().Select(a=>new SelectListItem() { Text=a,Value=a})"></select>*@
 <form method="post">
     <table class="table">
         <tr>
@@ -26,10 +112,11 @@
             </tr>
         }
     </table>
+    @Html.HiddenFor(m => m.TagCropResults);
     @Html.HiddenFor(m => m.Path)
     <p>@Html.CheckBoxFor(m => m.AutoSave) AUTO SAVE</p>
-    <button asp-page-handler="Save" >Save</button>
-    <button asp-page-handler="Next" >Next</button>
-    <button asp-page-handler="Prev" >Prev</button>
+    <button asp-page-handler="Save">Save</button>
+    <button asp-page-handler="Next">Next</button>
+    <button asp-page-handler="Prev">Prev</button>
 </form>
 

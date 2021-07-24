@@ -38,6 +38,8 @@ namespace LipstickTaggerWebApplication.Pages
         public bool AutoSave { get; set; }
         public string Path { get; set; }
         public string ImgPath { get; set; }
+        [BindProperty]
+        public string TagCropResults { get; set; }
         public async Task<IActionResult> OnGetAsync(string path)
         {
 
@@ -46,7 +48,7 @@ namespace LipstickTaggerWebApplication.Pages
             if(userSetting!=null)
                 AutoSave = userSetting.EnableAutoSave;
             Tags = GetTagList().Select(a => new TagState(a, false)).ToList();
-            ImgPath = "/api/ApiData/GetImg?path=" + System.Web.HttpUtility.UrlEncode(path);
+            ImgPath = "/api/ApiData?path=" + System.Web.HttpUtility.UrlEncode(path);
             var jsonpath = GetWorkJsonPath(path);
             TagResult tagresult;
             if (System.IO.File.Exists(jsonpath))
@@ -57,6 +59,10 @@ namespace LipstickTaggerWebApplication.Pages
                     foreach (var item in Tags)
                     {
                         item.Enable = tagresult.PhotosTags.Contains(item.Tag);
+                    }
+                    if(tagresult.TagCropResults!=null && tagresult.TagCropResults.Count>0)
+                    {
+                        TagCropResults = Newtonsoft.Json.JsonConvert.SerializeObject(tagresult.TagCropResults);
                     }
                 }
             }
@@ -117,9 +123,6 @@ namespace LipstickTaggerWebApplication.Pages
         }
         [BindProperty]
         public List<TagState> Tags { get; set; }
-        [BindProperty]
-        public string[] SelectedTags { get; set; }
-        public SelectList TagsSelect { get; set; }
 
         public static IEnumerable<string> GetTagList()
         {
