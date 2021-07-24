@@ -16,7 +16,15 @@ namespace LipstickTaggerWebApplication
         [Authorize]
         public IActionResult GetImg([FromQuery]string path)
         {
-            return File(System.IO.File.OpenRead("mdata\\photos\\" + path), "image/jpeg");
+            var filepath = "mdata\\photos\\" + path;
+            if(System.IO.File.Exists(filepath))
+            {
+                return File(System.IO.File.OpenRead(filepath), "image/jpeg");
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
     }

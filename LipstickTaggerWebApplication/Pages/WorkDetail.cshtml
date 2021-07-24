@@ -12,8 +12,14 @@
 <div>
     <img id="image" style="display:block;width:100%" src="@Model.ImgPath" />
 </div>
-<select ></select>
+<select id="cropselect"></select>
 <script>
+    const removeChilds = (parent) => {
+        while (parent.lastChild) {
+            parent.removeChild(parent.lastChild);
+        }
+    };
+
 
     const image = document.getElementById('image');
     const cropper = new Cropper(image, {
@@ -30,14 +36,14 @@
     });
 </script><br/>
 <button id="leftrotate">左旋</button><input id="input-num" type="number" value="0"/><button id="rightrotate">右旋</button><br/>
-<button>Remove</button><br/>
-<select>
+<button id="removebtn">Remove</button><br/>
+<select id="selectname">
      <option value="0">口红膏体及本体</option>
      <option value="1">口红涂抹样例</option>
      <option value="2">口红本体</option>
      <option value="3">口红外包装</option>
 </select>
-<button>Add</button><br/>
+<button id="addbtn">Add</button><br/>
 <script>
     var leftrotate = document.getElementById("leftrotate");
     var rightrotate = document.getElementById("rightrotate");
@@ -93,7 +99,7 @@
 </script>
 @*<select style="height:200pt;width:fit-content"
     asp-for="SelectedTags" asp-items="WorkDetailModel.GetTagList().Select(a=>new SelectListItem() { Text=a,Value=a})"></select>*@
-<form method="post">
+<form id="dataform" method="post">
     <table class="table">
         <tr>
             <th>Id</th>
@@ -112,11 +118,63 @@
             </tr>
         }
     </table>
-    @Html.HiddenFor(m => m.TagCropResults);
-    @Html.HiddenFor(m => m.Path)
+    @Html.HiddenFor(m => m.TagCropResults,new { id="cropsinput" })
+    @Html.HiddenFor(m => m.path)
     <p>@Html.CheckBoxFor(m => m.AutoSave) AUTO SAVE</p>
     <button asp-page-handler="Save">Save</button>
     <button asp-page-handler="Next">Next</button>
     <button asp-page-handler="Prev">Prev</button>
 </form>
+<script>
+    var cropsinput = document.getElementById("cropsinput");
+    const crops = cropsinput.value === "" ? [] : JSON.parse(cropsinput.value);
+    var addbtn = document.getElementById("addbtn");
+    var selectname = document.getElementById("selectname");
+    function createOption(value,content) {
+        let li = document.createElement('option');
+        li.textContent = content;
+        li.value = value;
+        return li;
+    }
+    function resetselectnorebuild() {
+        var cropselect = document.getElementById("cropselect");
+        if (cropselect.value != "") {
+            cropper.setData(crops[cropselect.value].CropResult);
+        }
+    }
+    function resetselect() {
+        var cropselect = document.getElementById("cropselect");
+        removeChilds(cropselect);
+        cropselect.appendChild(createOption("", "请选择"));
+        for (var i = 0; i < crops.length; i++) {
+            cropselect.appendChild(createOption(i, crops[i].Tag));
+        }
+        resetselectnorebuild();
+    }
+    resetselect();
+    addbtn.onclick = function () {
+        crops.push({ Tag: selectname.children[selectname.value+1].textContent, CropResult: cropper.getData(false) });
+        resetselect();
+        cropselect.value = crops.length - 1;
+        resetselectnorebuild();
+    }
+    var removebtn = document.getElementById("removebtn");
+    removebtn.onclick = function () {
+        crops.splice(cropselect.value, 1);
+        resetselect();
+    }
+    oldcropselectindex = -1;
+    cropselect.onchange = function () {
+        if (oldcropselectindex > 0) {
+            crops[oldcropselectindex].CropResult = cropper.getData(false);
+        }
+        cropper.setData(crops[cropselect.value].CropResult);
+        oldcropselectindex = cropselect.value;
+    }
+    $('#dataform').submit(function () {
+        crops[cropselect.value].CropResult = cropper.getData(false);
+        cropsinput.value = JSON.stringify(crops);
+        return true;
+    });
+</script>
 
