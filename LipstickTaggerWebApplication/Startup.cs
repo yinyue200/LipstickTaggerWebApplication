@@ -45,6 +45,8 @@ namespace LipstickTaggerWebApplication
             {
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
+                EnableRegister = false;
+
             }
             else
             {
