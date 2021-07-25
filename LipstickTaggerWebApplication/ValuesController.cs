@@ -19,7 +19,9 @@ namespace LipstickTaggerWebApplication
             var filepath = "mdata" + System.IO.Path.DirectorySeparatorChar + "photos" + System.IO.Path.DirectorySeparatorChar + path; ;
             if(System.IO.File.Exists(filepath))
             {
-                return File(System.IO.File.OpenRead(filepath), "image/jpeg");
+                DateTimeOffset dateTimeOffset = System.IO.File.GetLastWriteTimeUtc(filepath);
+                return File(System.IO.File.OpenRead(filepath), "image/jpeg", dateTimeOffset,
+                    new Microsoft.Net.Http.Headers.EntityTagHeaderValue(path));
             }
             else
             {
