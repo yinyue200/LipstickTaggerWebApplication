@@ -10,7 +10,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     @if (!string.IsNullOrEmpty(Model.NextPath))
     {
-        <link rel="preload" href="@WorkDetailModel.GetImgUrl(Model.NextPath)" as="image" type="image/jpeg" />
+        <link rel="prefetch" href="@WorkDetailModel.GetImgUrl(Model.NextPath)" as="image" type="image/jpeg" />
     }
     @if (!string.IsNullOrEmpty(Model.PrevPath))
     {
@@ -148,7 +148,12 @@
                 crops[oldcropselectindex].CropResult = cropper.getData(false);
             }
             cropper.crop();
-            cropper.setData(crops[cropselect.value].CropResult);
+            if (cropselect.value == "") {
+                cropper.clear();
+            }
+            else {
+                cropper.setData(crops[cropselect.value].CropResult);
+            }
             oldcropselectindex = cropselect.value;
         }
         $('#dataform').submit(function () {
