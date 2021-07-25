@@ -26,6 +26,7 @@
         //aspectRatio: 16 / 9,
         autoCrop:false,
         zoomable: false,
+        viewMode:1,
         crop(event) {
             //console.log(event.detail.x);
             //console.log(event.detail.y);
@@ -147,7 +148,7 @@
     function resetselectnorebuild() {
         var cropselect = document.getElementById("cropselect");
         if (cropselect.value != "") {
-            cropper.setData(crops[cropselect.value + 1].CropResult);
+            cropper.setData(crops[cropselect.value].CropResult);
         }
     }
     function resetselect() {
@@ -181,6 +182,7 @@
         if (oldcropselectindex > 0) {
             crops[oldcropselectindex].CropResult = cropper.getData(false);
         }
+        cropper.crop();
         cropper.setData(crops[cropselect.value].CropResult);
         oldcropselectindex = cropselect.value;
     }
