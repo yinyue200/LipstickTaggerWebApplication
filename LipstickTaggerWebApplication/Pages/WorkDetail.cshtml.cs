@@ -43,6 +43,8 @@ namespace LipstickTaggerWebApplication.Pages
         private UserManager<IdentityUser> _userManager;
         private ApplicationDbContext _applicationDbContext;
         [BindProperty]
+        public bool ForceNoSave { get; set; }
+        [BindProperty]
         public bool AutoSave { get; set; }
         public string path { get; set; }
         public string ImgPath { get; set; }
@@ -163,13 +165,15 @@ namespace LipstickTaggerWebApplication.Pages
         public async Task<IActionResult> OnPostSaveAsync(string path)
         {
             this.path = path;
-            ImgPath = GetImgUrl(System.Web.HttpUtility.UrlEncode(path));
+            ImgPath = GetImgUrl(path);
             await SaveDataAsync(path);
             return Page();
         }
 
         private async Task SaveDataAsync(string path)
         {
+            if (ForceNoSave)
+                return;
             var user = await _userManager.GetUserAsync(User);
             var userSetting = _applicationDbContext.UserSettingEntities.Where(a => a.UserId == user.Id).FirstOrDefault();
             if (userSetting != null)

@@ -21,13 +21,76 @@
     <img id="image" style="display:block;width:100%" src="@Model.ImgPath" />
 </div>
 <select id="cropselect"></select>
+<br />
+<button id="leftrotate">左旋</button>
+<input id="input-num" type="number" value="0" />
+<button id="rightrotate">右旋</button>
+<br />
+<button id="removebtn">Remove</button>
+<br />
+<select id="selectname">
+    <option value="0">口红本体</option>
+    <option value="1">口红膏体及本体</option>
+    <option value="2">口红涂抹样例</option>
+    <option value="3">口红外包装</option>
+</select>
+<button id="addbtn">Add</button>
+<br />
+<hr />
+@if (Model.InfoStr != null)
+{
+    @(Model.InfoStr.RateSku)
+    <br />
+    @(Model.InfoStr.Rater)<span>&nbsp;|&nbsp;</span>
+    @(Model.InfoStr.RateDate)
+    <br />
+    @(Model.InfoStr.RateContent)
+    <br />
+    @(Model.InfoStr.AppendDate)
+    <br />
+    @(Model.InfoStr.AppendContent)
+    <br />
+}
+
+<hr />
+@*<select style="height:200pt;width:fit-content"
+    asp-for="SelectedTags" asp-items="WorkDetailModel.GetTagList().Select(a=>new SelectListItem() { Text=a,Value=a})"></select>*@
+<form id="dataform" method="post">
+    <table class="table">
+        <tr>
+            <th>Id</th>
+            <th>Enable</th>
+        </tr>
+        @for (int i = 0; i < Model.Tags.Count; i++)
+        {
+            <tr>
+                <td>
+                    @*<input type="hidden" name="Tags.Index" value="@i" />*@
+                    <input type="hidden" asp-for="Tags[i].Tag" value="@Model.Tags[i].Tag" />
+                    @Model.Tags[i].Tag
+                </td>
+                <td><input asp-for="Tags[i].Enable" type="checkbox" value="true" /></td>
+                @*checked="" @(Model.Tags[i].Enable ? "checked='checked'" : "")*@
+            </tr>
+        }
+    </table>
+    <input type="hidden" name="ForceNoSave" value="true" id="forcenosave"/>
+    @Html.HiddenFor(m => m.TagCropResults, new { id = "cropsinput" })
+    @Html.HiddenFor(m => m.path)
+    @Html.HiddenFor(m => m.NextPath, new { id = "hid_nextpath" })
+    @Html.HiddenFor(m => m.PrevPath, new { id = "hid_prevpath" })
+    <p>@Html.CheckBoxFor(m => m.AutoSave) AUTO SAVE</p>
+    <button id="savebtn" disabled asp-page-handler="Save">Save</button>
+    <button id="nextbtn" asp-page-handler="Next">Next</button>
+    <button id="prevbtn" asp-page-handler="Prev">Prev</button>
+</form>
 <script>
     const removeChilds = (parent) => {
         while (parent.lastChild) {
             parent.removeChild(parent.lastChild);
         }
     };
-    
+
 
     const image = document.getElementById('image');
 
@@ -166,85 +229,30 @@
 
         var savebtn = document.getElementById("savebtn");
         savebtn.disabled = false;
-    }
 
-
-    $('#image').on("load",function () {
-        loadcropper();
-    });
-</script>
-<br />
-<button id="leftrotate">左旋</button>
-<input id="input-num" type="number" value="0" />
-<button id="rightrotate">右旋</button>
-<br />
-<button id="removebtn">Remove</button>
-<br />
-<select id="selectname">
-    <option value="0">口红本体</option>
-    <option value="1">口红膏体及本体</option>
-    <option value="2">口红涂抹样例</option>
-    <option value="3">口红外包装</option>
-</select>
-<button id="addbtn">Add</button>
-<br />
-<hr />
-@if (Model.InfoStr != null)
-{
-    @(Model.InfoStr.RateSku)
-    <br />
-    @(Model.InfoStr.Rater)<span>&nbsp;|&nbsp;</span>
-    @(Model.InfoStr.RateDate)
-    <br />
-    @(Model.InfoStr.RateContent)
-    <br />
-    @(Model.InfoStr.AppendDate)
-    <br />
-    @(Model.InfoStr.AppendContent)
-    <br />
-}
-
-<hr />
-@*<select style="height:200pt;width:fit-content"
-    asp-for="SelectedTags" asp-items="WorkDetailModel.GetTagList().Select(a=>new SelectListItem() { Text=a,Value=a})"></select>*@
-<form id="dataform" method="post">
-    <table class="table">
-        <tr>
-            <th>Id</th>
-            <th>Enable</th>
-        </tr>
-        @for (int i = 0; i < Model.Tags.Count; i++)
-        {
-            <tr>
-                <td>
-                    @*<input type="hidden" name="Tags.Index" value="@i" />*@
-                    <input type="hidden" asp-for="Tags[i].Tag" value="@Model.Tags[i].Tag" />
-                    @Model.Tags[i].Tag
-                </td>
-                <td><input asp-for="Tags[i].Enable" type="checkbox" value="true" /></td>
-                @*checked="" @(Model.Tags[i].Enable ? "checked='checked'" : "")*@
-            </tr>
+        var nextbtn = document.getElementById("nextbtn");
+        var prevbtn = document.getElementById("prevbtn");
+        var hid_nextpath = document.getElementById("hid_nextpath");
+        var hid_prevpath = document.getElementById("hid_prevpath");
+        if (hid_nextpath.value == "") {
+            nextbtn.disabled = true;
         }
-    </table>
-    @Html.HiddenFor(m => m.TagCropResults, new { id = "cropsinput" })
-    @Html.HiddenFor(m => m.path)
-    @Html.HiddenFor(m => m.NextPath, new { id = "hid_nextpath" })
-    @Html.HiddenFor(m => m.PrevPath, new { id = "hid_prevpath" })
-    <p>@Html.CheckBoxFor(m => m.AutoSave) AUTO SAVE</p>
-    <button id="savebtn" disabled asp-page-handler="Save">Save</button>
-    <button id="nextbtn" asp-page-handler="Next">Next</button>
-    <button id="prevbtn" asp-page-handler="Prev">Prev</button>
-</form>
-<script>
-    var nextbtn = document.getElementById("nextbtn");
-    var prevbtn = document.getElementById("prevbtn");
-    var hid_nextpath = document.getElementById("hid_nextpath");
-    var hid_prevpath = document.getElementById("hid_prevpath");
-    if (hid_nextpath.value == "") {
-        nextbtn.disabled = true;
+        if (hid_prevpath.value == "") {
+            prevbtn.disabled = true;
+        }
+
+        var forcenosave = document.getElementById("forcenosave");
+        forcenosave.value = false;
     }
-    if (hid_prevpath.value == "") {
-        prevbtn.disabled = true;
+
+    if (image.complete) {
+        loadcropper();
     }
+    else {
+        $('#image').on("load", function () {
+            loadcropper();
+        });
+    }
+
 </script>
 
