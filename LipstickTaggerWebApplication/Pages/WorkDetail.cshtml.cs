@@ -123,7 +123,7 @@ namespace LipstickTaggerWebApplication.Pages
             if(userSetting!=null)
                 AutoSave = userSetting.EnableAutoSave;
             Tags = GetTagList().Select(a => new TagState(a, false)).ToList();
-            ImgPath = GetImgUrl("/api/ApiData?path=" + System.Web.HttpUtility.UrlEncode(path));
+            ImgPath = GetImgUrl(path);
             var jsonpath = GetWorkJsonPath(path);
             TagResult tagresult;
             if (System.IO.File.Exists(jsonpath))

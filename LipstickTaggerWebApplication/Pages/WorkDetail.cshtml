@@ -10,7 +10,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     @if (!string.IsNullOrEmpty(Model.NextPath))
     {
-        <link rel="prefetch" href="@WorkDetailModel.GetImgUrl(Model.NextPath)" as="image" type="image/jpeg" />
+        <link rel="preload" href="@WorkDetailModel.GetImgUrl(Model.NextPath)" as="image" type="image/jpeg" />
     }
     @if (!string.IsNullOrEmpty(Model.PrevPath))
     {
@@ -27,23 +27,145 @@
             parent.removeChild(parent.lastChild);
         }
     };
-
+    
 
     const image = document.getElementById('image');
-    const cropper = new Cropper(image, {
-        //aspectRatio: 16 / 9,
-        autoCrop: false,
-        zoomable: false,
-        viewMode: 1,
-        crop(event) {
-            //console.log(event.detail.x);
-            //console.log(event.detail.y);
-            //console.log(event.detail.width);
-            //console.log(event.detail.height);
-            //console.log(event.detail.rotate);
-            //console.log(event.detail.scaleX);
-            //console.log(event.detail.scaleY);
-        },
+
+    function loadcropper() {
+        const cropper = new Cropper(image, {
+            //aspectRatio: 16 / 9,
+            autoCrop: false,
+            zoomable: false,
+            viewMode: 1,
+            crop(event) {
+                //console.log(event.detail.x);
+                //console.log(event.detail.y);
+                //console.log(event.detail.width);
+                //console.log(event.detail.height);
+                //console.log(event.detail.rotate);
+                //console.log(event.detail.scaleX);
+                //console.log(event.detail.scaleY);
+            },
+        });
+
+        var leftrotate = document.getElementById("leftrotate");
+        var rightrotate = document.getElementById("rightrotate");
+        var input_num = document.getElementById("input-num");  //数字显示
+        function setrotate() {
+            cropper.rotateTo(parseInt(input_num.value));
+        }
+        input_num.onchange = function () {
+            setrotate();
+        }
+        leftrotate.onmousedown = function () {
+            var i = 0; //变量i
+            mouseTime = setInterval(function () {  //setInterval可一直执行内部函数
+                left();
+                i++  //若过一秒，执行一次i++
+            }, 70);
+            if (i == 0) {  //i=0时证明无长按事件为单击事件
+                left();
+            }
+        }
+        function left() { //数字加1函数
+            if (input_num.value < 0) {
+                input_num.value = 359;
+            } else {
+                input_num.value = parseInt(input_num.value) - 1;
+            }
+            setrotate();
+        }
+        leftrotate.onmouseup = function () {//鼠标抬起，执行清除
+            clearInterval(mouseTime);   //清除setInterval的时间
+        }
+        rightrotate.onmousedown = function () {
+            var i = 0;
+            mouseTime = setInterval(function () {
+                right();
+                i++     //i=0时证明无长按事件为单击事件
+            }, 70); //1000即1秒
+            if (i == 0) {
+                right();
+            }
+        }
+        function right() {
+            if (input_num.value >= 360) {
+                input_num.value = 0;
+            } else {
+                input_num.value = parseInt(input_num.value) + 1;
+            }
+            setrotate();
+        }
+        rightrotate.onmouseup = function () {
+            clearInterval(mouseTime);
+        }
+
+        var cropsinput = document.getElementById("cropsinput");
+        const crops = cropsinput.value === "" ? [] : JSON.parse(cropsinput.value);
+        var addbtn = document.getElementById("addbtn");
+        var selectname = document.getElementById("selectname");
+        function createOption(value, content) {
+            let li = document.createElement('option');
+            li.textContent = content;
+            li.value = value;
+            return li;
+        }
+        function resetselectnorebuild() {
+            var cropselect = document.getElementById("cropselect");
+            if (cropselect.value != "") {
+                cropper.setData(crops[cropselect.value].CropResult);
+            }
+        }
+        function resetselect() {
+            var cropselect = document.getElementById("cropselect");
+            removeChilds(cropselect);
+            cropselect.appendChild(createOption("", "请选择"));
+            for (var i = 0; i < crops.length; i++) {
+                cropselect.appendChild(createOption(i, crops[i].Tag));
+            }
+            resetselectnorebuild();
+        }
+        resetselect();
+        addbtn.onclick = function () {
+            var cpdata = cropper.getData(false);
+            if (cpdata.height == 0 && cpdata.width == 0) {
+                alert("请先选择区域");
+                return;
+            }
+            crops.push({ Tag: selectname.children[selectname.value].textContent, CropResult: cpdata });
+            resetselect();
+            cropselect.value = crops.length - 1;
+            resetselectnorebuild();
+        }
+        var removebtn = document.getElementById("removebtn");
+        removebtn.onclick = function () {
+            crops.splice(cropselect.value, 1);
+            resetselect();
+        }
+        oldcropselectindex = -1;
+        cropselect.onchange = function () {
+            if (oldcropselectindex > 0) {
+                crops[oldcropselectindex].CropResult = cropper.getData(false);
+            }
+            cropper.crop();
+            cropper.setData(crops[cropselect.value].CropResult);
+            oldcropselectindex = cropselect.value;
+        }
+        $('#dataform').submit(function () {
+            if (cropselect.value != "") {
+                crops[cropselect.value].CropResult = cropper.getData(false);
+            }
+            cropsinput.value = JSON.stringify(crops);
+            return true;
+        });
+
+        var savebtn = document.getElementById("savebtn");
+        savebtn.disabled = false;
+    }
+
+
+    $('#image').on("load",function () {
+        loadcropper();
     });
 </script>
 <br />
@@ -61,59 +183,6 @@
 </select>
 <button id="addbtn">Add</button>
 <br />
-<script>
-    var leftrotate = document.getElementById("leftrotate");
-    var rightrotate = document.getElementById("rightrotate");
-    var input_num = document.getElementById("input-num");  //数字显示
-    function setrotate() {
-        cropper.rotateTo(parseInt(input_num.value));
-    }
-    input_num.onchange = function () {
-        setrotate();
-    }
-    leftrotate.onmousedown = function () {
-        var i = 0; //变量i
-        mouseTime = setInterval(function () {  //setInterval可一直执行内部函数
-            left();
-            i++  //若过一秒，执行一次i++
-        }, 70);
-        if (i == 0) {  //i=0时证明无长按事件为单击事件
-            left();
-        }
-    }
-    function left() { //数字加1函数
-        if (input_num.value < 0) {
-            input_num.value = 359;
-        } else {
-            input_num.value = parseInt(input_num.value) - 1;
-        }
-        setrotate();
-    }
-    leftrotate.onmouseup = function () {//鼠标抬起，执行清除
-        clearInterval(mouseTime);   //清除setInterval的时间
-    }
-    rightrotate.onmousedown = function () {
-        var i = 0;
-        mouseTime = setInterval(function () {
-            right();
-            i++     //i=0时证明无长按事件为单击事件
-        }, 70); //1000即1秒
-        if (i == 0) {
-            right();
-        }
-    }
-    function right() {
-        if (input_num.value >= 360) {
-            input_num.value = 0;
-        } else {
-            input_num.value = parseInt(input_num.value) + 1;
-        }
-        setrotate();
-    }
-    rightrotate.onmouseup = function () {
-        clearInterval(mouseTime);
-    }
-</script>
 <hr />
 @if (Model.InfoStr != null)
 {
@@ -157,7 +226,7 @@
     @Html.HiddenFor(m => m.NextPath, new { id = "hid_nextpath" })
     @Html.HiddenFor(m => m.PrevPath, new { id = "hid_prevpath" })
     <p>@Html.CheckBoxFor(m => m.AutoSave) AUTO SAVE</p>
-    <button asp-page-handler="Save">Save</button>
+    <button id="savebtn" disabled asp-page-handler="Save">Save</button>
     <button id="nextbtn" asp-page-handler="Next">Next</button>
     <button id="prevbtn" asp-page-handler="Prev">Prev</button>
 </form>
@@ -172,65 +241,5 @@
     if (hid_prevpath.value == "") {
         prevbtn.disabled = true;
     }
-</script>
-<script>
-    var cropsinput = document.getElementById("cropsinput");
-    const crops = cropsinput.value === "" ? [] : JSON.parse(cropsinput.value);
-    var addbtn = document.getElementById("addbtn");
-    var selectname = document.getElementById("selectname");
-    function createOption(value, content) {
-        let li = document.createElement('option');
-        li.textContent = content;
-        li.value = value;
-        return li;
-    }
-    function resetselectnorebuild() {
-        var cropselect = document.getElementById("cropselect");
-        if (cropselect.value != "") {
-            cropper.setData(crops[cropselect.value].CropResult);
-        }
-    }
-    function resetselect() {
-        var cropselect = document.getElementById("cropselect");
-        removeChilds(cropselect);
-        cropselect.appendChild(createOption("", "请选择"));
-        for (var i = 0; i < crops.length; i++) {
-            cropselect.appendChild(createOption(i, crops[i].Tag));
-        }
-        resetselectnorebuild();
-    }
-    resetselect();
-    addbtn.onclick = function () {
-        var cpdata = cropper.getData(false);
-        if (cpdata.height == 0 && cpdata.width == 0) {
-            alert("请先选择区域");
-            return;
-        }
-        crops.push({ Tag: selectname.children[selectname.value].textContent, CropResult: cpdata });
-        resetselect();
-        cropselect.value = crops.length - 1;
-        resetselectnorebuild();
-    }
-    var removebtn = document.getElementById("removebtn");
-    removebtn.onclick = function () {
-        crops.splice(cropselect.value, 1);
-        resetselect();
-    }
-    oldcropselectindex = -1;
-    cropselect.onchange = function () {
-        if (oldcropselectindex > 0) {
-            crops[oldcropselectindex].CropResult = cropper.getData(false);
-        }
-        cropper.crop();
-        cropper.setData(crops[cropselect.value].CropResult);
-        oldcropselectindex = cropselect.value;
-    }
-    $('#dataform').submit(function () {
-        if (cropselect.value != "") {
-            crops[cropselect.value].CropResult = cropper.getData(false);
-        }
-        cropsinput.value = JSON.stringify(crops);
-        return true;
-    });
 </script>
 
