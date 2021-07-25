@@ -1,11 +1,11 @@
 ﻿@page
 @using Microsoft.AspNetCore.Identity
 @using X.PagedList.Mvc.Core;
+@using X.PagedList.Mvc.Bootstrap4.Core;
 @model LipstickTaggerWebApplication.Pages.ViewWorksModel
 @{
     ViewData["Title"] = "查看工作列表";
 }
-
 List of Works
 <ul>
     @foreach (var one in Model.PagedWorkList)
@@ -13,4 +13,4 @@ List of Works
         <li>@one | @Model.HasResult(one) <a asp-page="./WorkDetail" asp-route-path="@one">View</a></li>
     }
 </ul>
-@Html.PagedListPager(Model.PagedWorkList, page => "?page="+page)
+@Html.PagedListPager(Model.PagedWorkList, page => "?page="+page, Bootstrap4PagedListRenderOptions.ClassicPlusFirstAndLast)

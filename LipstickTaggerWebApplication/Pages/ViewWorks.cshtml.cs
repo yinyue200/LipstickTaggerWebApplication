@@ -29,7 +29,7 @@ namespace LipstickTaggerWebApplication.Pages
                 .ToList();
         }
         public IPagedList<string> PagedWorkList;
-        public async Task<IActionResult> OnGetAsync(int? page)
+        public async Task<IActionResult> OnGetAsync([FromQuery]int? page)
         {
             if(signInManager.IsSignedIn(User))
             {
