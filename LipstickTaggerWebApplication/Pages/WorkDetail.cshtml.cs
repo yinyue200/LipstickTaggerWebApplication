@@ -50,18 +50,19 @@ namespace LipstickTaggerWebApplication.Pages
         public string TagCropResults { get; set; }
         public ReviewInfo InfoStr { get; set; }
         private IMemoryCache _cache;
+        public static string hex(byte[] s)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder(35);
+            for (int i = 0; i < s.Length; i++)
+            {
+                // 将得到的字符串使用十六进制类型格式。格式后的字符是小写的字母，如果使用大写（X）则格式后的字符是大写字符 
+                sb.Append(s[i].ToString("x2"));
+            }
+            return sb.ToString();
+        }
         internal ReviewInfo GetInfo(string path)
         {
-            static string hex(byte[] s)
-            {
-                System.Text.StringBuilder sb = new System.Text.StringBuilder(35);
-                for (int i = 0; i < s.Length; i++)
-                {
-                    // 将得到的字符串使用十六进制类型格式。格式后的字符是小写的字母，如果使用大写（X）则格式后的字符是大写字符 
-                    sb.Append(s[i].ToString("x2"));
-                }
-                return sb.ToString();
-            }
+
             var dirpath = System.IO.Path.GetDirectoryName(path) + ".json";
             Dictionary<string, ReviewInfo> cacheinfo = null;
             if (_cache.TryGetValue(dirpath,out var jsonobj))
@@ -72,7 +73,7 @@ namespace LipstickTaggerWebApplication.Pages
             {
                 if(System.IO.File.Exists(dirpath))
                 {
-                    MD5 md5 = MD5.Create(); ;
+                    using MD5 md5 = MD5.Create(); ;
                     Dictionary<string, ReviewInfo> keyValues = new Dictionary<string, ReviewInfo>();
                     var alldata = Newtonsoft.Json.JsonConvert.DeserializeObject<Alldata>(System.IO.File.ReadAllText(dirpath));
                     if (alldata == null)
