@@ -49,6 +49,10 @@ namespace LipstickTaggerWebApplication.Pages
         [BindProperty]
         public string TagCropResults { get; set; }
         public ReviewInfo InfoStr { get; set; }
+        [BindProperty]
+        public string NextPath { get; set; }
+        [BindProperty]
+        public string PrevPath { get; set; }
         private IMemoryCache _cache;
         public static string hex(byte[] s)
         {
@@ -107,6 +111,10 @@ namespace LipstickTaggerWebApplication.Pages
         {
             InfoStr = GetInfo(path);
         }
+        public static string GetImgUrl(string path)
+        {
+            return "/api/ApiData?path=" + System.Web.HttpUtility.UrlEncode(path);
+        }
         public async Task<IActionResult> OnGetAsync(string path)
         {
             this.path = path;
@@ -115,7 +123,7 @@ namespace LipstickTaggerWebApplication.Pages
             if(userSetting!=null)
                 AutoSave = userSetting.EnableAutoSave;
             Tags = GetTagList().Select(a => new TagState(a, false)).ToList();
-            ImgPath = "/api/ApiData?path=" + System.Web.HttpUtility.UrlEncode(path);
+            ImgPath = GetImgUrl("/api/ApiData?path=" + System.Web.HttpUtility.UrlEncode(path));
             var jsonpath = GetWorkJsonPath(path);
             TagResult tagresult;
             if (System.IO.File.Exists(jsonpath))
@@ -134,11 +142,18 @@ namespace LipstickTaggerWebApplication.Pages
                 }
             }
             geninfostr(jsonpath);
+
+            try
+            {
+                var worklist = await ViewWorksModel.getworklist(User.Identity.Name);
+                var pathindex = worklist.IndexOf(path);
+                if (pathindex < worklist.Count - 1)
+                    NextPath = worklist[pathindex + 1];
+                if (pathindex >= 1)
+                    PrevPath = worklist[pathindex - 1];
+            }
+            catch { }
             //SelectedTags =  new string[] { "ÎÞ¹ØÍ¼Æ¬" };
-            return Page();
-        }
-        public async Task<IActionResult> OnPostAsync(string action)
-        {
             return Page();
         }
         public static string GetWorkJsonPath(string path)
@@ -148,7 +163,7 @@ namespace LipstickTaggerWebApplication.Pages
         public async Task<IActionResult> OnPostSaveAsync(string path)
         {
             this.path = path;
-            ImgPath = "/api/ApiData?path=" + System.Web.HttpUtility.UrlEncode(path);
+            ImgPath = GetImgUrl(System.Web.HttpUtility.UrlEncode(path));
             await SaveDataAsync(path);
             return Page();
         }
@@ -181,9 +196,7 @@ namespace LipstickTaggerWebApplication.Pages
             {
                 await SaveDataAsync(path);
             }
-            var worklist = await ViewWorksModel.getworklist(User.Identity.Name);
-            var newpath = worklist[worklist.IndexOf(path) + 1];
-            return RedirectToPage(new { path = newpath });
+            return RedirectToPage(new { path = NextPath });
         }
         public async Task<IActionResult> OnPostPrevAsync(string path)
         {
@@ -191,9 +204,7 @@ namespace LipstickTaggerWebApplication.Pages
             {
                 await SaveDataAsync(path);
             }
-            var worklist = await ViewWorksModel.getworklist(User.Identity.Name);
-            var newpath = worklist[worklist.IndexOf(path) - 1];
-            return RedirectToPage(new { path = newpath });
+            return RedirectToPage(new { path = PrevPath });
         }
         [BindProperty]
         public List<TagState> Tags { get; set; }

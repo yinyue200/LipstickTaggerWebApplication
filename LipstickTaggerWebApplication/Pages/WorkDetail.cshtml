@@ -8,6 +8,14 @@
 {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    @if (!string.IsNullOrEmpty(Model.NextPath))
+    {
+        <link rel="prefetch" href="@WorkDetailModel.GetImgUrl(Model.NextPath)" as="image" type="image/jpeg" />
+    }
+    @if (!string.IsNullOrEmpty(Model.PrevPath))
+    {
+        <link rel="prefetch" href="@WorkDetailModel.GetImgUrl(Model.PrevPath)" as="image" type="image/jpeg" />
+    }
 }
 <div style="max-height:90vh">
     <img id="image" style="display:block;width:100%" src="@Model.ImgPath" />
@@ -113,13 +121,13 @@
     <br />
     @(Model.InfoStr.Rater)<span>&nbsp;|&nbsp;</span>
     @(Model.InfoStr.RateDate)
-<br />
-@(Model.InfoStr.RateContent)
-<br />
-@(Model.InfoStr.AppendDate)
-<br />
-@(Model.InfoStr.AppendContent)
-<br />
+    <br />
+    @(Model.InfoStr.RateContent)
+    <br />
+    @(Model.InfoStr.AppendDate)
+    <br />
+    @(Model.InfoStr.AppendContent)
+    <br />
 }
 
 <hr />
@@ -146,11 +154,25 @@
     </table>
     @Html.HiddenFor(m => m.TagCropResults, new { id = "cropsinput" })
     @Html.HiddenFor(m => m.path)
+    @Html.HiddenFor(m => m.NextPath, new { id = "hid_nextpath" })
+    @Html.HiddenFor(m => m.PrevPath, new { id = "hid_prevpath" })
     <p>@Html.CheckBoxFor(m => m.AutoSave) AUTO SAVE</p>
     <button asp-page-handler="Save">Save</button>
-    <button asp-page-handler="Next">Next</button>
-    <button asp-page-handler="Prev">Prev</button>
+    <button id="nextbtn" asp-page-handler="Next">Next</button>
+    <button id="prevbtn" asp-page-handler="Prev">Prev</button>
 </form>
+<script>
+    var nextbtn = document.getElementById("nextbtn");
+    var prevbtn = document.getElementById("prevbtn");
+    var hid_nextpath = document.getElementById("hid_nextpath");
+    var hid_prevpath = document.getElementById("hid_prevpath");
+    if (hid_nextpath.value == "") {
+        nextbtn.disabled = true;
+    }
+    if (hid_prevpath.value == "") {
+        prevbtn.disabled = true;
+    }
+</script>
 <script>
     var cropsinput = document.getElementById("cropsinput");
     const crops = cropsinput.value === "" ? [] : JSON.parse(cropsinput.value);
