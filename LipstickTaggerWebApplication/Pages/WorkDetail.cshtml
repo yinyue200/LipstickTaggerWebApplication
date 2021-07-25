@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
 }
-<div>
+<div style="max-height:90vh">
     <img id="image" style="display:block;width:100%" src="@Model.ImgPath" />
 </div>
 <select id="cropselect"></select>
@@ -24,6 +24,7 @@
     const image = document.getElementById('image');
     const cropper = new Cropper(image, {
         //aspectRatio: 16 / 9,
+        zoomable:false,
         crop(event) {
             //console.log(event.detail.x);
             //console.log(event.detail.y);
