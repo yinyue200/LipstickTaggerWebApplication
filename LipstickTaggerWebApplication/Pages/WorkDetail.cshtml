@@ -6,8 +6,8 @@
 }
 @section Head
 {
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
 }
 <div style="max-height:90vh">
     <img id="image" style="display:block;width:100%" src="@Model.ImgPath" />
@@ -24,7 +24,7 @@
     const image = document.getElementById('image');
     const cropper = new Cropper(image, {
         //aspectRatio: 16 / 9,
-        zoomable:false,
+        zoomable: false,
         crop(event) {
             //console.log(event.detail.x);
             //console.log(event.detail.y);
@@ -35,16 +35,22 @@
             //console.log(event.detail.scaleY);
         },
     });
-</script><br/>
-<button id="leftrotate">左旋</button><input id="input-num" type="number" value="0"/><button id="rightrotate">右旋</button><br/>
-<button id="removebtn">Remove</button><br/>
+</script>
+<br />
+<button id="leftrotate">左旋</button>
+<input id="input-num" type="number" value="0" />
+<button id="rightrotate">右旋</button>
+<br />
+<button id="removebtn">Remove</button>
+<br />
 <select id="selectname">
-     <option value="0">口红膏体及本体</option>
-     <option value="1">口红涂抹样例</option>
-     <option value="2">口红本体</option>
-     <option value="3">口红外包装</option>
+    <option value="0">口红本体</option>
+    <option value="1">口红膏体及本体</option>
+    <option value="2">口红涂抹样例</option>
+    <option value="3">口红外包装</option>
 </select>
-<button id="addbtn">Add</button><br/>
+<button id="addbtn">Add</button>
+<br />
 <script>
     var leftrotate = document.getElementById("leftrotate");
     var rightrotate = document.getElementById("rightrotate");
@@ -108,15 +114,15 @@
         </tr>
         @for (int i = 0; i < Model.Tags.Count; i++)
         {
-            <tr>
-                <td>
-                    @*<input type="hidden" name="Tags.Index" value="@i" />*@
-                    <input type="hidden" asp-for="Tags[i].Tag" value="@Model.Tags[i].Tag" />
-                    @Model.Tags[i].Tag
-                </td>
-                <td><input asp-for="Tags[i].Enable" type="checkbox" value="true" /></td>
-                @*checked="" @(Model.Tags[i].Enable ? "checked='checked'" : "")*@
-            </tr>
+        <tr>
+            <td>
+                @*<input type="hidden" name="Tags.Index" value="@i" />*@
+                <input type="hidden" asp-for="Tags[i].Tag" value="@Model.Tags[i].Tag" />
+                @Model.Tags[i].Tag
+            </td>
+            <td><input asp-for="Tags[i].Enable" type="checkbox" value="true" /></td>
+            @*checked="" @(Model.Tags[i].Enable ? "checked='checked'" : "")*@
+        </tr>
         }
     </table>
     @Html.HiddenFor(m => m.TagCropResults,new { id="cropsinput" })
@@ -131,7 +137,7 @@
     const crops = cropsinput.value === "" ? [] : JSON.parse(cropsinput.value);
     var addbtn = document.getElementById("addbtn");
     var selectname = document.getElementById("selectname");
-    function createOption(value,content) {
+    function createOption(value, content) {
         let li = document.createElement('option');
         li.textContent = content;
         li.value = value;
@@ -140,7 +146,7 @@
     function resetselectnorebuild() {
         var cropselect = document.getElementById("cropselect");
         if (cropselect.value != "") {
-            cropper.setData(crops[cropselect.value].CropResult);
+            cropper.setData(crops[cropselect.value + 1].CropResult);
         }
     }
     function resetselect() {
@@ -154,7 +160,7 @@
     }
     resetselect();
     addbtn.onclick = function () {
-        crops.push({ Tag: selectname.children[selectname.value+1].textContent, CropResult: cropper.getData(false) });
+        crops.push({ Tag: selectname.children[selectname.value].textContent, CropResult: cropper.getData(false) });
         resetselect();
         cropselect.value = crops.length - 1;
         resetselectnorebuild();

@@ -80,6 +80,7 @@ namespace LipstickTaggerWebApplication.Pages
         public async Task<IActionResult> OnPostSaveAsync(string path)
         {
             this.path = path;
+            ImgPath = "/api/ApiData?path=" + System.Web.HttpUtility.UrlEncode(path);
             await SaveDataAsync(path);
             return Page();
         }
@@ -98,7 +99,8 @@ namespace LipstickTaggerWebApplication.Pages
             tagresult.Path = path;
             tagresult.LastEditBy = User.Identity.Name;
             tagresult.PhotosTags = Tags.Where(a => a.Enable).Select(a => a.Tag).ToList();
-            tagresult.TagCropResults = Newtonsoft.Json.JsonConvert.DeserializeObject<List<TagCropResult>>(TagCropResults);
+            tagresult.TagCropResults =string.IsNullOrWhiteSpace(TagCropResults)?null:
+                Newtonsoft.Json.JsonConvert.DeserializeObject<List<TagCropResult>>(TagCropResults);
             await System.IO.File.WriteAllTextAsync(GetWorkJsonPath(path),
                 Newtonsoft.Json.JsonConvert.SerializeObject(tagresult));
         }
