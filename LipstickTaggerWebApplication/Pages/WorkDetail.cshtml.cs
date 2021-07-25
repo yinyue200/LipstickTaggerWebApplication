@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using LipstickTaggerWebApplication.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace LipstickTaggerWebApplication.Pages
 {
@@ -24,13 +26,19 @@ namespace LipstickTaggerWebApplication.Pages
         public string Tag { get; set; }
         public bool Enable { get; set; }
     }
+    public record ReviewInfo(IEnumerable<string> ImgUrl, string RateContent, string RateSku, string Rater, string RateDate, string AppendContent, string AppendDate, IEnumerable<string> AppendImgUrl);
+    class Alldata
+    {
+        public List<ReviewInfo> ReviewInfos { get; set; }
+    }
     [Authorize]
     public class WorkDetailModel : PageModel
     {
-        public WorkDetailModel(ApplicationDbContext dbContext, UserManager<IdentityUser> userManager)
+        public WorkDetailModel(ApplicationDbContext dbContext, UserManager<IdentityUser> userManager, IMemoryCache memoryCache)
         {
             _applicationDbContext = dbContext;
             _userManager = userManager;
+            _cache = memoryCache;
         }
         private UserManager<IdentityUser> _userManager;
         private ApplicationDbContext _applicationDbContext;
@@ -40,6 +48,64 @@ namespace LipstickTaggerWebApplication.Pages
         public string ImgPath { get; set; }
         [BindProperty]
         public string TagCropResults { get; set; }
+        public ReviewInfo InfoStr { get; set; }
+        private IMemoryCache _cache;
+        internal ReviewInfo GetInfo(string path)
+        {
+            static string hex(byte[] s)
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder(35);
+                for (int i = 0; i < s.Length; i++)
+                {
+                    // 将得到的字符串使用十六进制类型格式。格式后的字符是小写的字母，如果使用大写（X）则格式后的字符是大写字符 
+                    sb.Append(s[i].ToString("x2"));
+                }
+                return sb.ToString();
+            }
+            var dirpath = System.IO.Path.GetDirectoryName(path) + ".json";
+            Dictionary<string, ReviewInfo> cacheinfo = null;
+            if (_cache.TryGetValue(dirpath,out var jsonobj))
+            {
+                cacheinfo = (Dictionary<string, ReviewInfo>)jsonobj;
+            }
+            else
+            {
+                if(System.IO.File.Exists(dirpath))
+                {
+                    MD5 md5 = MD5.Create(); ;
+                    Dictionary<string, ReviewInfo> keyValues = new Dictionary<string, ReviewInfo>();
+                    var alldata = Newtonsoft.Json.JsonConvert.DeserializeObject<Alldata>(System.IO.File.ReadAllText(dirpath));
+                    if (alldata == null)
+                        return null;
+                    foreach(var one in alldata.ReviewInfos)
+                    {
+                        foreach(var url in one.ImgUrl ?? Array.Empty<string>())
+                        {
+                            keyValues[hex(md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(url)))] = one;
+                        }
+                        foreach (var url in one.AppendImgUrl??Array.Empty<string>())
+                        {
+                            keyValues[hex(md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(url)))] = one;
+                        }
+                    }
+                    _cache.Set(dirpath, keyValues);
+                    cacheinfo = (Dictionary<string, ReviewInfo>)_cache.Get(dirpath);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            var npath = System.IO.Path.GetFileNameWithoutExtension(path);
+            var pi = npath.IndexOf('.');
+            var nfilename = pi < 0 ? npath : npath.Substring(0, pi);
+            cacheinfo.TryGetValue(nfilename, out var reviewInfo);
+            return reviewInfo;
+        }
+        internal void geninfostr(string path)
+        {
+            InfoStr = GetInfo(path);
+        }
         public async Task<IActionResult> OnGetAsync(string path)
         {
             this.path = path;
@@ -66,6 +132,7 @@ namespace LipstickTaggerWebApplication.Pages
                     }
                 }
             }
+            geninfostr(jsonpath);
             //SelectedTags =  new string[] { "无关图片" };
             return Page();
         }
@@ -101,8 +168,10 @@ namespace LipstickTaggerWebApplication.Pages
             tagresult.PhotosTags = Tags.Where(a => a.Enable).Select(a => a.Tag).ToList();
             tagresult.TagCropResults =string.IsNullOrWhiteSpace(TagCropResults)?null:
                 Newtonsoft.Json.JsonConvert.DeserializeObject<List<TagCropResult>>(TagCropResults);
-            await System.IO.File.WriteAllTextAsync(GetWorkJsonPath(path),
+            var jsonpath = GetWorkJsonPath(path);
+            await System.IO.File.WriteAllTextAsync(jsonpath,
                 Newtonsoft.Json.JsonConvert.SerializeObject(tagresult));
+            geninfostr(jsonpath);
         }
 
         public async Task<IActionResult> OnPostNextAsync(string path)

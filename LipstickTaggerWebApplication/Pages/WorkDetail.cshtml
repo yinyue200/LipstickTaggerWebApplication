@@ -24,9 +24,9 @@
     const image = document.getElementById('image');
     const cropper = new Cropper(image, {
         //aspectRatio: 16 / 9,
-        autoCrop:false,
+        autoCrop: false,
         zoomable: false,
-        viewMode:1,
+        viewMode: 1,
         crop(event) {
             //console.log(event.detail.x);
             //console.log(event.detail.y);
@@ -106,6 +106,23 @@
         clearInterval(mouseTime);
     }
 </script>
+<hr />
+@if (Model.InfoStr != null)
+{
+    @(Model.InfoStr.RateSku)
+    <br />
+    @(Model.InfoStr.Rater)<span>&nbsp;|&nbsp;</span>
+    @(Model.InfoStr.RateDate)
+<br />
+@(Model.InfoStr.RateContent)
+<br />
+@(Model.InfoStr.AppendDate)
+<br />
+@(Model.InfoStr.AppendContent)
+<br />
+}
+
+<hr />
 @*<select style="height:200pt;width:fit-content"
     asp-for="SelectedTags" asp-items="WorkDetailModel.GetTagList().Select(a=>new SelectListItem() { Text=a,Value=a})"></select>*@
 <form id="dataform" method="post">
@@ -116,18 +133,18 @@
         </tr>
         @for (int i = 0; i < Model.Tags.Count; i++)
         {
-        <tr>
-            <td>
-                @*<input type="hidden" name="Tags.Index" value="@i" />*@
-                <input type="hidden" asp-for="Tags[i].Tag" value="@Model.Tags[i].Tag" />
-                @Model.Tags[i].Tag
-            </td>
-            <td><input asp-for="Tags[i].Enable" type="checkbox" value="true" /></td>
-            @*checked="" @(Model.Tags[i].Enable ? "checked='checked'" : "")*@
-        </tr>
+            <tr>
+                <td>
+                    @*<input type="hidden" name="Tags.Index" value="@i" />*@
+                    <input type="hidden" asp-for="Tags[i].Tag" value="@Model.Tags[i].Tag" />
+                    @Model.Tags[i].Tag
+                </td>
+                <td><input asp-for="Tags[i].Enable" type="checkbox" value="true" /></td>
+                @*checked="" @(Model.Tags[i].Enable ? "checked='checked'" : "")*@
+            </tr>
         }
     </table>
-    @Html.HiddenFor(m => m.TagCropResults,new { id="cropsinput" })
+    @Html.HiddenFor(m => m.TagCropResults, new { id = "cropsinput" })
     @Html.HiddenFor(m => m.path)
     <p>@Html.CheckBoxFor(m => m.AutoSave) AUTO SAVE</p>
     <button asp-page-handler="Save">Save</button>
@@ -167,7 +184,7 @@
             alert("请先选择区域");
             return;
         }
-        crops.push({ Tag: selectname.children[selectname.value].textContent, CropResult: cpdata  });
+        crops.push({ Tag: selectname.children[selectname.value].textContent, CropResult: cpdata });
         resetselect();
         cropselect.value = crops.length - 1;
         resetselectnorebuild();
@@ -187,7 +204,9 @@
         oldcropselectindex = cropselect.value;
     }
     $('#dataform').submit(function () {
-        crops[cropselect.value].CropResult = cropper.getData(false);
+        if (cropselect.value != "") {
+            crops[cropselect.value].CropResult = cropper.getData(false);
+        }
         cropsinput.value = JSON.stringify(crops);
         return true;
     });

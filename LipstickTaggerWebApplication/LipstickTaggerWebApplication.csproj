@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="mdata\photos\【官方正品】MAC魅可全色号子弹头口红唇膏大牌女 小辣椒正红色.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="mdata\photos\a.png" />
   </ItemGroup>
 
@@ -16,12 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="mdata\photos\【官方正品】MAC魅可全色号子弹头口红唇膏大牌女 小辣椒正红色.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="5.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
     <PackageReference Include="X.PagedList.Mvc.Bootstrap4" Version="8.1.0" />
     <PackageReference Include="X.PagedList.Mvc.Core" Version="8.1.0" />
