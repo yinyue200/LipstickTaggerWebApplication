@@ -24,6 +24,7 @@
     const image = document.getElementById('image');
     const cropper = new Cropper(image, {
         //aspectRatio: 16 / 9,
+        autoCrop:false,
         zoomable: false,
         crop(event) {
             //console.log(event.detail.x);
@@ -160,7 +161,12 @@
     }
     resetselect();
     addbtn.onclick = function () {
-        crops.push({ Tag: selectname.children[selectname.value].textContent, CropResult: cropper.getData(false) });
+        var cpdata = cropper.getData(false);
+        if (cpdata.height == 0 && cpdata.width == 0) {
+            alert("请先选择区域");
+            return;
+        }
+        crops.push({ Tag: selectname.children[selectname.value].textContent, CropResult: cpdata  });
         resetselect();
         cropselect.value = crops.length - 1;
         resetselectnorebuild();
