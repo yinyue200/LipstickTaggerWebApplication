@@ -13,4 +13,4 @@ List of Works
         <li>@one | @Model.HasResult(one) <a asp-page="./WorkDetail" asp-route-path="@one">View</a></li>
     }
 </ul>
-@Html.PagedListPager(Model.PagedWorkList, page => Url.Action("ViewWorks", new { page }))
+@Html.PagedListPager(Model.PagedWorkList, page => "?page="+page)
