@@ -6,8 +6,8 @@
 }
 @section Head
 {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <script src="/js/cropper.min.js"></script>
+    <link href="/css/cropper.min.css" rel="stylesheet">
     @if (!string.IsNullOrEmpty(Model.NextPath))
     {
         <link rel="prefetch" href="@WorkDetailModel.GetImgUrl(Model.NextPath)" as="image" type="image/jpeg" />
@@ -222,6 +222,17 @@
         $('#dataform').submit(function () {
             if (cropselect.value != "") {
                 crops[cropselect.value].CropResult = cropper.getData(false);
+            }
+            else {
+                var cpdata = cropper.getData(false);
+                if (cpdata.height > 0 && cpdata.width > 0) {
+                    if (confirm("你当前划定的区域将不会被保存，你确定要继续吗？")) {
+
+                    }
+                    else {
+                        return false;
+                    }
+                }
             }
             cropsinput.value = JSON.stringify(crops);
             return true;
