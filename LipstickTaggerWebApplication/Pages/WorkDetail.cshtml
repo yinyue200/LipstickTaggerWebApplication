@@ -120,12 +120,18 @@
         input_num.onchange = function () {
             setrotate();
         }
+        yinyue200_isint = false;
         leftrotate.onmousedown = function () {
             var i = 0; //变量i
+            if (yinyue200_isint) {
+                clearInterval(mouseTime);   //清除setInterval的时间
+                yinyue200_isint = false;
+            }
             mouseTime = setInterval(function () {  //setInterval可一直执行内部函数
                 left();
                 i++  //若过一秒，执行一次i++
             }, 70);
+            yinyue200_isint = true;
             if (i == 0) {  //i=0时证明无长按事件为单击事件
                 left();
             }
@@ -139,14 +145,22 @@
             setrotate();
         }
         leftrotate.onmouseup = function () {//鼠标抬起，执行清除
-            clearInterval(mouseTime);   //清除setInterval的时间
+            if (yinyue200_isint) {
+                clearInterval(mouseTime);   //清除setInterval的时间
+                yinyue200_isint = false;
+            }
         }
         rightrotate.onmousedown = function () {
             var i = 0;
+            if (yinyue200_isint) {
+                clearInterval(mouseTime);   //清除setInterval的时间
+                yinyue200_isint = false;
+            }
             mouseTime = setInterval(function () {
                 right();
                 i++     //i=0时证明无长按事件为单击事件
             }, 70); //1000即1秒
+            yinyue200_isint = true;
             if (i == 0) {
                 right();
             }
@@ -160,7 +174,10 @@
             setrotate();
         }
         rightrotate.onmouseup = function () {
-            clearInterval(mouseTime);
+            if (yinyue200_isint) {
+                clearInterval(mouseTime);   //清除setInterval的时间
+                yinyue200_isint = false;
+            }
         }
 
         var cropsinput = document.getElementById("cropsinput");
